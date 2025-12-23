@@ -84,4 +84,18 @@ mark { background: #fde68a; color: inherit; }
 .two-pane .pane-left { scrollbar-gutter: stable; }
 .two-pane .pane-right { background: var(--bg-primary); }
 
+/* Minimal link styling to indicate clickable references */
+a.doc-link, .doc-link {
+  color: #3b82f6;
+  text-decoration: underline;
+  cursor: pointer;
+}
+a.doc-link:focus, .doc-link:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+a.doc-link:hover, .doc-link:hover {
+  opacity: 0.9;
+}
+
 .error { color: var(--danger); margin-top: 8px; }

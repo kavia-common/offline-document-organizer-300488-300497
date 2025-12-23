@@ -36,16 +36,23 @@ function AppShell() {
     initBootstrapIfNeeded();
   }, [initBootstrapIfNeeded]);
 
+  // Track and react to hash changes: supports #doc/<id> and #doc=<id>
   const [hash, setHash] = useState(window.location.hash || '');
   useEffect(() => {
     const onHashChange = () => setHash(window.location.hash || '');
     window.addEventListener('hashchange', onHashChange);
-    // Navigate to doc from hash: #doc/<id>
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  useEffect(() => {
+    if (!hash) return;
     if (hash.startsWith('#doc/')) {
       const id = hash.replace('#doc/', '');
       selectById(id);
+    } else if (hash.startsWith('#doc=')) {
+      const id = hash.replace('#doc=', '');
+      selectById(id);
     }
-    return () => window.removeEventListener('hashchange', onHashChange);
   }, [hash, selectById]);
 
   const toggleTheme = useCallback(() => {
@@ -96,6 +103,20 @@ function AppShell() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [openSearch, openImportExport, openSettings, openHelp, setUIState]);
 
+  // Simple toast system (non-destructive) for cross-component notifications
+  const [toast, setToast] = useState(null);
+  useEffect(() => {
+    const handler = (e) => {
+      const msg = e.detail?.msg;
+      if (!msg) return;
+      setToast(msg);
+      const timeout = setTimeout(() => setToast(null), 2200);
+      return () => clearTimeout(timeout);
+    };
+    window.addEventListener('app:toast', handler);
+    return () => window.removeEventListener('app:toast', handler);
+  }, []);
+
   return (
     <div className="app-root" style={{display:'flex', flexDirection:'column', height:'100vh', background:'var(--bg-primary)', color:'var(--text-primary)'}}>
       <TopBar
@@ -119,6 +140,27 @@ function AppShell() {
       {uiState.importExportOpen && <ImportExportModal onClose={() => setUIState({importExportOpen:false})} />}
       {uiState.settingsOpen && <SettingsModal onClose={() => setUIState({settingsOpen:false})} />}
       {uiState.helpOpen && <HelpAboutModal onClose={() => setUIState({helpOpen:false})} />}
+
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            right: 12,
+            bottom: 12,
+            background: 'var(--bg-secondary)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: 8,
+            padding: '8px 12px',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+            zIndex: 60,
+          }}
+        >
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

@@ -235,6 +235,11 @@ Select a document from the left to begin.`,
     setSelectedId(id || null);
     if (id) {
       window.location.hash = `#doc/${id}`;
+    } else {
+      // clear hash when no selection
+      if (window.location.hash) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
     }
   }, []);
 
